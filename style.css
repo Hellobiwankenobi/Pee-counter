@@ -200,6 +200,7 @@ small {
 }
 
 .today-card,
+.water-card,
 .tip-card,
 .progress-card,
 .panel-card {
@@ -293,27 +294,6 @@ small {
   font-weight: 800;
 }
 
-.water-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 38px;
-  margin-top: 16px;
-  border: 0;
-  border-radius: 999px;
-  padding: 0 14px;
-  color: var(--blue);
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: var(--soft-shadow);
-  font-size: 0.86rem;
-  font-weight: 850;
-}
-
-.water-chip svg {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
 .mascot {
   position: relative;
   align-self: end;
@@ -368,11 +348,83 @@ small {
   fill: #4d4a36;
 }
 
+.water-card,
 .tip-card,
 .progress-card,
 .panel-card {
   margin-top: 22px;
   padding: 22px;
+}
+
+.water-card {
+  background: rgba(244, 250, 255, 0.9);
+}
+
+.water-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.water-head h2 {
+  margin-bottom: 3px;
+  color: var(--blue);
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+}
+
+.water-head h2 small {
+  font-size: 1rem;
+}
+
+.water-orb {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  color: var(--blue);
+  background: rgba(110, 162, 229, 0.16);
+}
+
+.water-progress {
+  overflow: hidden;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(110, 162, 229, 0.14);
+}
+
+.water-progress span {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #87c2f8, #5f9570);
+  transition: width 180ms ease;
+}
+
+.water-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.water-actions button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--green-dark);
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.water-actions button:disabled {
+  cursor: default;
+  opacity: 0.42;
 }
 
 .tip-card {

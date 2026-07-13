@@ -29,10 +29,6 @@
           <p class="subline">uriniranj</p>
           <div id="dropMeter" class="drop-meter" aria-label="Dnevni napredek"></div>
           <p id="todayMessage" class="friendly-note">Dodaj prvi zapis za danes.</p>
-          <button class="water-chip" type="button" data-open-water>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1.2 18H8.2L7 3Z"/><path d="M8.2 13c2.3-1 4.6 1 7.4 0"/></svg>
-            <span>Zabeleži vodo</span>
-          </button>
         </div>
         <div class="mascot" aria-hidden="true">
           <svg viewBox="0 0 220 220">
@@ -45,6 +41,27 @@
             <circle cx="87" cy="111" r="5" class="eye"/>
             <circle cx="134" cy="111" r="5" class="eye"/>
           </svg>
+        </div>
+      </section>
+
+      <section class="water-card screen screen-home is-active" data-screen="home" aria-labelledby="waterTitle">
+        <div class="water-head">
+          <div>
+            <p class="kicker">Hidracija</p>
+            <h2 id="waterTitle"><span id="waterTotal">0</span><small> ml</small></h2>
+            <p id="waterGoalText" class="muted">cilj 2000 ml</p>
+          </div>
+          <div class="water-orb" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3c5 5.5 8 9.4 8 13a8 8 0 0 1-16 0c0-3.6 3-7.5 8-13Z"/></svg>
+          </div>
+        </div>
+        <div class="water-progress" aria-label="Dnevni napredek hidracije">
+          <span id="waterProgress"></span>
+        </div>
+        <div class="water-actions">
+          <button type="button" data-water-amount="250">+250 ml</button>
+          <button type="button" data-water-amount="500">+500 ml</button>
+          <button id="undoWater" type="button">Razveljavi</button>
         </div>
       </section>
 
@@ -124,6 +141,10 @@
           <label>
             Dnevni orientacijski cilj
             <input id="dailyGoal" type="number" min="1" max="20" step="1">
+          </label>
+          <label>
+            Dnevni cilj vode (ml)
+            <input id="waterGoal" type="number" min="250" max="6000" step="250">
           </label>
           <button id="clearAll" class="danger-button" type="button">Pobriši vse lokalne zapise</button>
           <p class="health-note">Pogosto, boleče ali nenadno spremenjeno uriniranje je lahko zdravstveni znak. Ta evidenca pomaga opaziti vzorce, ne nadomešča zdravnika.</p>

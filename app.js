@@ -1,4 +1,5 @@
 const STORAGE_KEY = "pee-counter.entries.v1";
+const WATER_STORAGE_KEY = "pee-counter.water.v1";
 const SETTINGS_KEY = "pee-counter.settings.v1";
 
 const els = {
@@ -15,7 +16,12 @@ const els = {
   todayCount: document.getElementById("todayCount"),
   todayMessage: document.getElementById("todayMessage"),
   dropMeter: document.getElementById("dropMeter"),
+  waterTotal: document.getElementById("waterTotal"),
+  waterGoalText: document.getElementById("waterGoalText"),
+  waterProgress: document.getElementById("waterProgress"),
+  undoWater: document.getElementById("undoWater"),
   dailyGoal: document.getElementById("dailyGoal"),
+  waterGoal: document.getElementById("waterGoal"),
   dailyTip: document.getElementById("dailyTip"),
   range: document.getElementById("rangeSelect"),
   rangeCount: document.getElementById("rangeCount"),
@@ -39,6 +45,7 @@ const tips = [
 ];
 
 let entries = loadEntries();
+let waterEntries = loadWaterEntries();
 let settings = loadSettings();
 
 function loadEntries() {
@@ -59,16 +66,35 @@ function loadEntries() {
   }
 }
 
+function loadWaterEntries() {
+  try {
+    return JSON.parse(localStorage.getItem(WATER_STORAGE_KEY) || "[]")
+      .filter((entry) => entry && entry.time && Number(entry.amountMl) > 0)
+      .map((entry) => ({
+        id: entry.id || crypto.randomUUID(),
+        time: entry.time,
+        amountMl: Number(entry.amountMl)
+      }))
+      .sort((a, b) => new Date(b.time) - new Date(a.time));
+  } catch {
+    return [];
+  }
+}
+
 function loadSettings() {
   try {
-    return { dailyGoal: 8, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
+    return { dailyGoal: 8, waterGoalMl: 2000, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") };
   } catch {
-    return { dailyGoal: 8 };
+    return { dailyGoal: 8, waterGoalMl: 2000 };
   }
 }
 
 function saveEntries() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
+function saveWaterEntries() {
+  localStorage.setItem(WATER_STORAGE_KEY, JSON.stringify(waterEntries));
 }
 
 function saveSettings() {
@@ -160,6 +186,41 @@ function calculateStreak() {
   }
 
   return streak;
+}
+
+function addWater(amountMl) {
+  waterEntries = [
+    {
+      id: crypto.randomUUID(),
+      time: new Date().toISOString(),
+      amountMl
+    },
+    ...waterEntries
+  ].sort((a, b) => new Date(b.time) - new Date(a.time));
+  saveWaterEntries();
+  render();
+}
+
+function undoLastWater() {
+  const today = new Date();
+  const index = waterEntries.findIndex((entry) => sameDay(new Date(entry.time), today));
+  if (index === -1) return;
+  waterEntries.splice(index, 1);
+  saveWaterEntries();
+  render();
+}
+
+function renderWater() {
+  const today = new Date();
+  const todayWater = waterEntries.filter((entry) => sameDay(new Date(entry.time), today));
+  const total = todayWater.reduce((sum, entry) => sum + entry.amountMl, 0);
+  const goal = Math.max(250, Number(settings.waterGoalMl || 2000));
+  const progress = Math.min(100, Math.round((total / goal) * 100));
+
+  els.waterTotal.textContent = total;
+  els.waterGoalText.textContent = `cilj ${goal} ml`;
+  els.waterProgress.style.width = `${progress}%`;
+  els.undoWater.disabled = todayWater.length === 0;
 }
 
 function renderDrops(todayCount) {
@@ -264,9 +325,8 @@ function setScreen(name) {
   });
 }
 
-function openEntryDialog(waterNote = "") {
+function openEntryDialog() {
   resetForm();
-  if (waterNote) els.note.value = waterNote;
   if (typeof els.dialog.showModal === "function") {
     els.dialog.showModal();
   } else {
@@ -287,15 +347,22 @@ function render() {
   els.todayDate.textContent = new Intl.DateTimeFormat("sl-SI", { weekday: "long", day: "2-digit", month: "long" }).format(now);
   els.dailyTip.textContent = tips[tipIndex];
   els.dailyGoal.value = settings.dailyGoal;
+  els.waterGoal.value = settings.waterGoalMl;
   renderToday(todayEntries);
+  renderWater();
   renderMetrics(rangeEntries);
   renderChart(rangeEntries);
   renderHistory();
 }
 
 els.openEntry.addEventListener("click", () => openEntryDialog());
-document.querySelector("[data-open-water]").addEventListener("click", () => openEntryDialog("Dodana voda."));
 els.closeEntry.addEventListener("click", closeEntryDialog);
+
+document.querySelectorAll("[data-water-amount]").forEach((button) => {
+  button.addEventListener("click", () => addWater(Number(button.dataset.waterAmount)));
+});
+
+els.undoWater.addEventListener("click", undoLastWater);
 
 document.querySelectorAll("[data-time-shift]").forEach((button) => {
   button.addEventListener("click", () => setEntryTimeByHourShift(Number(button.dataset.timeShift)));
@@ -351,26 +418,45 @@ els.dailyGoal.addEventListener("change", () => {
   render();
 });
 
+els.waterGoal.addEventListener("change", () => {
+  settings.waterGoalMl = Math.min(6000, Math.max(250, Number(els.waterGoal.value || 2000)));
+  saveSettings();
+  render();
+});
+
 els.clearAll.addEventListener("click", () => {
-  if (!entries.length) return;
+  if (!entries.length && !waterEntries.length) return;
   if (confirm("Res pobrišem vse lokalne zapise?")) {
     entries = [];
+    waterEntries = [];
     saveEntries();
+    saveWaterEntries();
     render();
     setScreen("home");
   }
 });
 
 els.exportCsv.addEventListener("click", () => {
-  const header = ["time", "urgency", "volume", "comfort", "note"];
-  const rows = entries.map((entry) => [
+  const header = ["type", "time", "urgency", "volume", "comfort", "amount_ml", "note"];
+  const peeRows = entries.map((entry) => [
+    "pee",
     entry.time,
     entry.urgency,
     entry.volume,
     entry.comfort,
+    "",
     entry.note
   ]);
-  const csv = [header, ...rows]
+  const waterRows = waterEntries.map((entry) => [
+    "water",
+    entry.time,
+    "",
+    "",
+    "",
+    entry.amountMl,
+    ""
+  ]);
+  const csv = [header, ...peeRows, ...waterRows]
     .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
     .join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
