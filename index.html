@@ -141,7 +141,21 @@
             <article><strong id="avgInterval">-</strong><small>povp. interval</small></article>
             <article><strong id="longestInterval">-</strong><small>najdaljši interval</small></article>
           </div>
-          <div id="dayChart" class="bar-chart" aria-label="Graf dnevnega števila obiskov"></div>
+          <div class="chart-scroll" aria-label="Graf dnevnega števila obiskov">
+            <div id="dayChart" class="bar-chart"></div>
+          </div>
+          <section class="monthly-report" aria-labelledby="monthlyReportTitle">
+            <div>
+              <p class="kicker">Poročilo</p>
+              <h3 id="monthlyReportTitle">Ta mesec</h3>
+            </div>
+            <div class="report-grid">
+              <article><strong id="monthTotalPee">0</strong><small>WC skupaj</small></article>
+              <article><strong id="monthAvgPee">0.0</strong><small>WC/dan</small></article>
+              <article><strong id="monthWater">0 ml</strong><small>voda/dan</small></article>
+              <article><strong id="monthActiveDays">0</strong><small>dni z zapisi</small></article>
+            </div>
+          </section>
         </div>
       </section>
 

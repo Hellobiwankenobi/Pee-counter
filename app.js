@@ -31,6 +31,11 @@ const els = {
   longestInterval: document.getElementById("longestInterval"),
   streakDays: document.getElementById("streakDays"),
   dayChart: document.getElementById("dayChart"),
+  monthlyReportTitle: document.getElementById("monthlyReportTitle"),
+  monthTotalPee: document.getElementById("monthTotalPee"),
+  monthAvgPee: document.getElementById("monthAvgPee"),
+  monthWater: document.getElementById("monthWater"),
+  monthActiveDays: document.getElementById("monthActiveDays"),
   history: document.getElementById("historyList"),
   search: document.getElementById("search"),
   exportCsv: document.getElementById("exportCsv"),
@@ -138,6 +143,10 @@ function formatDay(value) {
   return new Intl.DateTimeFormat("sl-SI", { day: "2-digit", month: "2-digit" }).format(value);
 }
 
+function formatMonth(value) {
+  return new Intl.DateTimeFormat("sl-SI", { month: "long", year: "numeric" }).format(value);
+}
+
 function formatHours(hours) {
   if (!Number.isFinite(hours)) return "-";
   const whole = Math.floor(hours);
@@ -174,6 +183,15 @@ function getRangeWaterEntries() {
   cutoff.setDate(cutoff.getDate() - days + 1);
   cutoff.setHours(0, 0, 0, 0);
   return waterEntries.filter((entry) => new Date(entry.time) >= cutoff);
+}
+
+function getMonthEntries(list, date = new Date()) {
+  const start = new Date(date.getFullYear(), date.getMonth(), 1);
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  return list.filter((entry) => {
+    const entryDate = new Date(entry.time);
+    return entryDate >= start && entryDate < end;
+  });
 }
 
 function getAverageWindowDays(rangeEntries, rangeWaterEntries) {
@@ -294,11 +312,12 @@ function renderMetrics(rangeEntries) {
 }
 
 function renderChart(rangeEntries) {
-  const days = Math.min(Number(els.range.value), 14);
+  const days = Number(els.range.value);
   const today = startOfDay(new Date());
   const buckets = [];
 
-  els.dayChart.style.gridTemplateColumns = `repeat(${days}, minmax(24px, 1fr))`;
+  els.dayChart.style.setProperty("--chart-days", days);
+  els.dayChart.style.gridTemplateColumns = `repeat(${days}, minmax(28px, 1fr))`;
 
   for (let index = days - 1; index >= 0; index -= 1) {
     const day = new Date(today);
@@ -322,6 +341,21 @@ function renderChart(rangeEntries) {
       </div>
     `;
   }).join("");
+}
+
+function renderMonthlyReport() {
+  const now = new Date();
+  const monthEntries = getMonthEntries(entries, now);
+  const monthWaterEntries = getMonthEntries(waterEntries, now);
+  const elapsedDays = now.getDate();
+  const activeDays = new Set(monthEntries.map((entry) => startOfDay(new Date(entry.time)).getTime())).size;
+  const waterTotal = monthWaterEntries.reduce((sum, entry) => sum + entry.amountMl, 0);
+
+  els.monthlyReportTitle.textContent = `${formatMonth(now)} do danes`;
+  els.monthTotalPee.textContent = monthEntries.length;
+  els.monthAvgPee.textContent = (monthEntries.length / elapsedDays).toFixed(1);
+  els.monthWater.textContent = formatWaterMl(waterTotal / elapsedDays);
+  els.monthActiveDays.textContent = activeDays;
 }
 
 function renderHistory() {
@@ -386,6 +420,7 @@ function render() {
   renderWater();
   renderMetrics(rangeEntries);
   renderChart(rangeEntries);
+  renderMonthlyReport();
   renderHistory();
 }
 
