@@ -83,6 +83,12 @@ function toDatetimeLocal(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+function setEntryTimeByHourShift(hours) {
+  const date = new Date();
+  date.setHours(date.getHours() + hours);
+  els.time.value = toDatetimeLocal(date);
+}
+
 function startOfDay(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -291,15 +297,30 @@ els.openEntry.addEventListener("click", () => openEntryDialog());
 document.querySelector("[data-open-water]").addEventListener("click", () => openEntryDialog("Dodana voda."));
 els.closeEntry.addEventListener("click", closeEntryDialog);
 
+document.querySelectorAll("[data-time-shift]").forEach((button) => {
+  button.addEventListener("click", () => setEntryTimeByHourShift(Number(button.dataset.timeShift)));
+});
+
+document.querySelector("[data-focus-time]").addEventListener("click", () => {
+  els.time.focus();
+  if (typeof els.time.showPicker === "function") els.time.showPicker();
+});
+
 document.querySelectorAll("[data-screen-button]").forEach((button) => {
   button.addEventListener("click", () => setScreen(button.dataset.screenButton));
 });
 
 els.form.addEventListener("submit", (event) => {
   event.preventDefault();
+  const entryDate = new Date(els.time.value);
+  if (!Number.isFinite(entryDate.getTime())) {
+    els.time.focus();
+    return;
+  }
+
   const entry = {
     id: crypto.randomUUID(),
-    time: new Date(els.time.value).toISOString(),
+    time: entryDate.toISOString(),
     urgency: Number(els.urgency.value),
     volume: els.volume.value,
     comfort: els.comfort.value,

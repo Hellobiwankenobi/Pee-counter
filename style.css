@@ -293,6 +293,27 @@ small {
   font-weight: 800;
 }
 
+.water-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  margin-top: 16px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 14px;
+  color: var(--blue);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--soft-shadow);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.water-chip svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
 .mascot {
   position: relative;
   align-self: end;
@@ -580,7 +601,7 @@ textarea {
   left: 50%;
   bottom: 94px;
   width: min(100% - 34px, 400px);
-  justify-content: space-between;
+  justify-content: center;
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 4;
@@ -592,17 +613,6 @@ textarea {
   color: var(--green);
   background: rgba(255, 255, 255, 0.9);
   box-shadow: var(--shadow);
-}
-
-.dock-button.small {
-  display: grid;
-  place-items: center;
-  gap: 5px;
-  width: 72px;
-  height: 72px;
-  border-radius: 24px;
-  font-size: 0.78rem;
-  font-weight: 800;
 }
 
 .dock-button.add {
@@ -657,8 +667,7 @@ textarea {
   color: var(--green);
 }
 
-.bottom-nav svg,
-.dock-button.small svg {
+.bottom-nav svg {
   width: 1.45rem;
   height: 1.45rem;
 }
@@ -690,6 +699,23 @@ textarea {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+.time-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: -6px;
+}
+
+.time-shortcuts button {
+  min-height: 36px;
+  border: 1px solid rgba(95, 149, 112, 0.18);
+  border-radius: 999px;
+  color: var(--green-dark);
+  background: rgba(95, 149, 112, 0.09);
+  font-size: 0.78rem;
+  font-weight: 850;
 }
 
 .icon-button {
@@ -757,10 +783,5 @@ textarea {
   .dock-button.add {
     width: 112px;
     height: 112px;
-  }
-
-  .dock-button.small {
-    width: 64px;
-    height: 64px;
   }
 }

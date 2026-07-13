@@ -29,6 +29,10 @@
           <p class="subline">uriniranj</p>
           <div id="dropMeter" class="drop-meter" aria-label="Dnevni napredek"></div>
           <p id="todayMessage" class="friendly-note">Dodaj prvi zapis za danes.</p>
+          <button class="water-chip" type="button" data-open-water>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1.2 18H8.2L7 3Z"/><path d="M8.2 13c2.3-1 4.6 1 7.4 0"/></svg>
+            <span>Zabeleži vodo</span>
+          </button>
         </div>
         <div class="mascot" aria-hidden="true">
           <svg viewBox="0 0 220 220">
@@ -128,17 +132,9 @@
     </main>
 
     <div class="action-dock">
-      <button class="dock-button small" type="button" data-open-water>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l-1.2 18H8.2L7 3Z"/><path d="M8.2 13c2.3-1 4.6 1 7.4 0"/></svg>
-        <span>Voda</span>
-      </button>
       <button id="openEntry" class="dock-button add" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         <span>Dodaj</span>
-      </button>
-      <button class="dock-button small" type="button" data-screen-button="stats">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10m7 10V4m7 16v-7"/></svg>
-        <span>Statistika</span>
       </button>
     </div>
 
@@ -177,6 +173,12 @@
         Čas
         <input id="entryTime" type="datetime-local" required>
       </label>
+      <div class="time-shortcuts" aria-label="Hitre izbire časa">
+        <button type="button" data-time-shift="0">Zdaj</button>
+        <button type="button" data-time-shift="-1">Pred 1h</button>
+        <button type="button" data-time-shift="-24">Včeraj</button>
+        <button type="button" data-focus-time>Ročno</button>
+      </div>
       <div class="form-grid">
         <label>
           Nujnost
