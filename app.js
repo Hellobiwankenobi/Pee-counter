@@ -24,8 +24,9 @@ const els = {
   waterGoal: document.getElementById("waterGoal"),
   dailyTip: document.getElementById("dailyTip"),
   range: document.getElementById("rangeSelect"),
-  rangeCount: document.getElementById("rangeCount"),
-  avgPerDay: document.getElementById("avgPerDay"),
+  avgPeePerDay: document.getElementById("avgPeePerDay"),
+  avgWaterPerDay: document.getElementById("avgWaterPerDay"),
+  statsAvgPee: document.getElementById("statsAvgPee"),
   avgInterval: document.getElementById("avgInterval"),
   longestInterval: document.getElementById("longestInterval"),
   streakDays: document.getElementById("streakDays"),
@@ -146,6 +147,11 @@ function formatHours(hours) {
   return `${whole} h ${minutes} min`;
 }
 
+function formatWaterMl(amountMl) {
+  if (amountMl >= 1000) return `${(amountMl / 1000).toFixed(1)} l`;
+  return `${Math.round(amountMl)} ml`;
+}
+
 function resetForm() {
   els.time.value = toDatetimeLocal(new Date());
   els.urgency.value = "3";
@@ -160,6 +166,28 @@ function getRangeEntries() {
   cutoff.setDate(cutoff.getDate() - days + 1);
   cutoff.setHours(0, 0, 0, 0);
   return entries.filter((entry) => new Date(entry.time) >= cutoff);
+}
+
+function getRangeWaterEntries() {
+  const days = Number(els.range.value);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days + 1);
+  cutoff.setHours(0, 0, 0, 0);
+  return waterEntries.filter((entry) => new Date(entry.time) >= cutoff);
+}
+
+function getAverageWindowDays(rangeEntries, rangeWaterEntries) {
+  const days = Number(els.range.value);
+  const combined = [...rangeEntries, ...rangeWaterEntries];
+  if (!combined.length) return days;
+
+  const today = startOfDay(new Date());
+  const firstDay = combined
+    .map((entry) => startOfDay(new Date(entry.time)))
+    .reduce((earliest, day) => (day < earliest ? day : earliest), today);
+  const elapsedDays = Math.floor((today - firstDay) / 86400000) + 1;
+
+  return Math.max(1, Math.min(days, elapsedDays));
 }
 
 function withIntervals(list) {
@@ -248,14 +276,18 @@ function renderToday(todayEntries) {
 }
 
 function renderMetrics(rangeEntries) {
-  const days = Number(els.range.value);
+  const rangeWaterEntries = getRangeWaterEntries();
+  const days = getAverageWindowDays(rangeEntries, rangeWaterEntries);
+  const waterTotal = rangeWaterEntries.reduce((sum, entry) => sum + entry.amountMl, 0);
   const intervalRows = withIntervals(rangeEntries).filter((entry) => entry.previousIntervalHours !== null);
   const intervals = intervalRows.map((entry) => entry.previousIntervalHours);
   const avg = intervals.length ? intervals.reduce((sum, value) => sum + value, 0) / intervals.length : null;
   const longest = intervals.length ? Math.max(...intervals) : null;
+  const avgPee = (rangeEntries.length / days).toFixed(1);
 
-  els.rangeCount.textContent = rangeEntries.length;
-  els.avgPerDay.textContent = (rangeEntries.length / days).toFixed(1);
+  els.avgPeePerDay.textContent = avgPee;
+  els.statsAvgPee.textContent = avgPee;
+  els.avgWaterPerDay.textContent = formatWaterMl(waterTotal / days);
   els.avgInterval.textContent = formatHours(avg);
   els.longestInterval.textContent = formatHours(longest);
   els.streakDays.textContent = calculateStreak();
@@ -265,6 +297,8 @@ function renderChart(rangeEntries) {
   const days = Math.min(Number(els.range.value), 14);
   const today = startOfDay(new Date());
   const buckets = [];
+
+  els.dayChart.style.gridTemplateColumns = `repeat(${days}, minmax(24px, 1fr))`;
 
   for (let index = days - 1; index >= 0; index -= 1) {
     const day = new Date(today);
