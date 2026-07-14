@@ -198,7 +198,7 @@ small {
 }
 
 .today-card,
-.water-card,
+.night-card,
 .tip-card,
 .progress-card,
 .panel-card {
@@ -346,7 +346,7 @@ small {
   fill: #4d4a36;
 }
 
-.water-card,
+.night-card,
 .tip-card,
 .progress-card,
 .panel-card {
@@ -354,73 +354,52 @@ small {
   padding: 22px;
 }
 
-.water-card {
-  background: rgba(244, 250, 255, 0.9);
+.night-card {
+  background: linear-gradient(145deg, rgba(236, 242, 255, 0.92), rgba(248, 245, 255, 0.86));
 }
 
-.water-head {
+.night-head {
   display: flex;
   justify-content: space-between;
   gap: 16px;
   align-items: center;
-  margin-bottom: 16px;
 }
 
-.water-head h2 {
-  margin-bottom: 3px;
-  color: var(--blue);
-  font-size: 2rem;
-  letter-spacing: -0.03em;
-}
-
-.water-head h2 small {
-  font-size: 1rem;
-}
-
-.water-orb {
+.night-orb {
   display: grid;
+  flex: 0 0 auto;
   place-items: center;
-  width: 58px;
-  height: 58px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  color: var(--blue);
+  color: #5d76aa;
   background: rgba(110, 162, 229, 0.16);
 }
 
-.water-progress {
-  overflow: hidden;
-  height: 12px;
-  border-radius: 999px;
-  background: rgba(110, 162, 229, 0.14);
+.sleep-detail {
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.4;
 }
 
-.water-progress span {
-  display: block;
-  width: 0%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #87c2f8, #5f9570);
-  transition: width 180ms ease;
-}
-
-.water-actions {
+.night-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 14px;
 }
 
-.water-actions button {
-  min-height: 40px;
+.night-actions button {
+  min-height: 42px;
   border: 0;
   border-radius: 999px;
-  color: var(--green-dark);
-  background: rgba(255, 255, 255, 0.8);
-  font-size: 0.82rem;
+  color: #3d5f8b;
+  background: rgba(255, 255, 255, 0.82);
+  font-size: 0.78rem;
   font-weight: 850;
 }
 
-.water-actions button:disabled {
+.night-actions button:disabled {
   cursor: default;
   opacity: 0.42;
 }
@@ -510,11 +489,6 @@ small {
   letter-spacing: 0.03em;
 }
 
-.bubble.water {
-  color: var(--blue);
-  background: rgba(110, 162, 229, 0.15);
-}
-
 .bubble.star {
   color: #dca620;
   background: rgba(243, 192, 78, 0.17);
@@ -568,12 +542,14 @@ textarea {
 }
 
 .stat-strip {
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 18px;
 }
 
 .stat-strip article {
   flex: 1;
+  min-width: calc(50% - 6px);
   padding: 15px;
   border-radius: 22px;
   background: rgba(231, 242, 255, 0.74);
