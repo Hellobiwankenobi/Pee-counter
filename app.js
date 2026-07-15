@@ -24,10 +24,10 @@ const els = {
   dailyGoal: document.getElementById("dailyGoal"),
   dailyTip: document.getElementById("dailyTip"),
   range: document.getElementById("rangeSelect"),
-  avgPeePerDay: document.getElementById("avgPeePerDay"),
+  todayInterval: document.getElementById("todayInterval"),
   statsAvgPee: document.getElementById("statsAvgPee"),
-  avgInterval: document.getElementById("avgInterval"),
-  longestInterval: document.getElementById("longestInterval"),
+  weeklyInterval: document.getElementById("weeklyInterval"),
+  allTimeInterval: document.getElementById("allTimeInterval"),
   avgNightInterval: document.getElementById("avgNightInterval"),
   streakDays: document.getElementById("streakDays"),
   dayChart: document.getElementById("dayChart"),
@@ -247,6 +247,34 @@ function intervalOverlapsSleep(startValue, endValue) {
   });
 }
 
+function getDayIntervalRows(list) {
+  return withIntervals(list).filter((entry) => (
+    entry.previousIntervalHours !== null &&
+    !entry.isNight &&
+    !intervalOverlapsSleep(entry.previousTime, entry.time)
+  ));
+}
+
+function averageInterval(list) {
+  const intervals = getDayIntervalRows(list).map((entry) => entry.previousIntervalHours);
+  if (!intervals.length) return null;
+  return intervals.reduce((sum, value) => sum + value, 0) / intervals.length;
+}
+
+function getLastTodayInterval() {
+  const today = new Date();
+  const rows = getDayIntervalRows(entries).filter((entry) => sameDay(new Date(entry.time), today));
+  const latest = rows.at(-1);
+  return latest ? latest.previousIntervalHours : null;
+}
+
+function getLastDaysEntries(days) {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days + 1);
+  cutoff.setHours(0, 0, 0, 0);
+  return entries.filter((entry) => new Date(entry.time) >= cutoff);
+}
+
 function calculateAverageNightInterval() {
   const completed = getRangeSleepSessions()
     .filter((session) => session.end)
@@ -350,37 +378,58 @@ function renderDrops(todayCount) {
   }).join("");
 }
 
+function getLatestIntervalMessage() {
+  const intervalRows = getDayIntervalRows(entries);
+
+  if (!intervalRows.length) {
+    return "Prvi zapis je shranjen. Zdaj ga odmisli in normalno nadaljuj z dnevom.";
+  }
+
+  const latest = intervalRows[intervalRows.length - 1];
+  const previousRows = intervalRows.slice(0, -1);
+
+  if (previousRows.length < 2) {
+    return `Zadnji interval je bil ${formatHours(latest.previousIntervalHours)}. Samo opazuj, brez zaključkov iz enega podatka.`;
+  }
+
+  const baseline = previousRows.reduce((sum, entry) => sum + entry.previousIntervalHours, 0) / previousRows.length;
+
+  if (latest.previousIntervalHours < baseline * 0.7) {
+    return "Interval je precej krajši kot običajno. Umiri se, zadihaj in premisli, kaj se je spremenilo.";
+  }
+
+  if (latest.previousIntervalHours > baseline * 1.35) {
+    return "Interval je daljši kot običajno. Lepo, samo zapiši vzorec in nadaljuj normalno z dnevom.";
+  }
+
+  return "Super, interval je v tvojem običajnem ritmu. Zdaj to odmisli in nadaljuj normalno z dnevom.";
+}
+
 function renderToday(todayEntries) {
   const count = todayEntries.length;
   const goal = Math.max(1, Number(settings.dailyGoal || 8));
   els.todayCount.textContent = count;
   document.querySelector(".goal-text").textContent = `/${goal}`;
+  els.todayInterval.textContent = formatHours(getLastTodayInterval());
   renderDrops(count);
 
   if (count === 0) {
     els.todayMessage.textContent = "Dodaj prvi zapis za danes.";
-  } else if (count < goal) {
-    els.todayMessage.textContent = "Dobro. Samo opazuj ritem, brez panike.";
   } else {
-    els.todayMessage.textContent = "Super, današnji cilj evidence je dosežen.";
+    els.todayMessage.textContent = getLatestIntervalMessage();
   }
 }
 
 function renderMetrics(rangeEntries) {
   const days = getAverageWindowDays(rangeEntries);
-  const intervalRows = withIntervals(rangeEntries).filter((entry) => (
-    entry.previousIntervalHours !== null && !intervalOverlapsSleep(entry.previousTime, entry.time)
-  ));
-  const intervals = intervalRows.map((entry) => entry.previousIntervalHours);
-  const avg = intervals.length ? intervals.reduce((sum, value) => sum + value, 0) / intervals.length : null;
-  const longest = intervals.length ? Math.max(...intervals) : null;
+  const weeklyAvg = averageInterval(getLastDaysEntries(7));
+  const allTimeAvg = averageInterval(entries);
   const nightAvg = calculateAverageNightInterval();
   const avgPee = (rangeEntries.length / days).toFixed(1);
 
-  els.avgPeePerDay.textContent = avgPee;
   els.statsAvgPee.textContent = avgPee;
-  els.avgInterval.textContent = formatHours(avg);
-  els.longestInterval.textContent = formatHours(longest);
+  els.weeklyInterval.textContent = formatHours(weeklyAvg);
+  els.allTimeInterval.textContent = formatHours(allTimeAvg);
   els.avgNightInterval.textContent = formatHours(nightAvg);
   els.streakDays.textContent = calculateStreak();
 }
