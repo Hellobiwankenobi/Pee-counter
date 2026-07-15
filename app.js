@@ -261,9 +261,16 @@ function averageInterval(list) {
   return intervals.reduce((sum, value) => sum + value, 0) / intervals.length;
 }
 
-function getLastTodayInterval() {
+function getTodayIntervalRows() {
   const today = new Date();
-  const rows = getDayIntervalRows(entries).filter((entry) => sameDay(new Date(entry.time), today));
+  return getDayIntervalRows(entries).filter((entry) => (
+    sameDay(new Date(entry.time), today) &&
+    sameDay(new Date(entry.previousTime), today)
+  ));
+}
+
+function getLastTodayInterval() {
+  const rows = getTodayIntervalRows();
   const latest = rows.at(-1);
   return latest ? latest.previousIntervalHours : null;
 }
@@ -379,14 +386,14 @@ function renderDrops(todayCount) {
 }
 
 function getLatestIntervalMessage() {
-  const intervalRows = getDayIntervalRows(entries);
+  const todayRows = getTodayIntervalRows();
 
-  if (!intervalRows.length) {
+  if (!todayRows.length) {
     return "Prvi zapis je shranjen. Zdaj ga odmisli in normalno nadaljuj z dnevom.";
   }
 
-  const latest = intervalRows[intervalRows.length - 1];
-  const previousRows = intervalRows.slice(0, -1);
+  const latest = todayRows.at(-1);
+  const previousRows = getDayIntervalRows(entries).filter((entry) => entry.time !== latest.time);
 
   if (previousRows.length < 2) {
     return `Zadnji interval je bil ${formatHours(latest.previousIntervalHours)}. Samo opazuj, brez zaključkov iz enega podatka.`;
