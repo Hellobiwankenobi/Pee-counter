@@ -16,6 +16,7 @@ const els = {
   todayCount: document.getElementById("todayCount"),
   todayMessage: document.getElementById("todayMessage"),
   dropMeter: document.getElementById("dropMeter"),
+  mascotFill: document.getElementById("mascotFill"),
   startSleep: document.getElementById("startSleep"),
   logNightPee: document.getElementById("logNightPee"),
   endSleep: document.getElementById("endSleep"),
@@ -25,6 +26,7 @@ const els = {
   dailyTip: document.getElementById("dailyTip"),
   range: document.getElementById("rangeSelect"),
   todayInterval: document.getElementById("todayInterval"),
+  currentInterval: document.getElementById("currentInterval"),
   statsAvgPee: document.getElementById("statsAvgPee"),
   weeklyInterval: document.getElementById("weeklyInterval"),
   allTimeInterval: document.getElementById("allTimeInterval"),
@@ -267,6 +269,37 @@ function averageInterval(list) {
   const intervals = getDayIntervalRows(list).map((entry) => entry.previousIntervalHours);
   if (!intervals.length) return null;
   return intervals.reduce((sum, value) => sum + value, 0) / intervals.length;
+}
+
+function getLastDayPeeEntry() {
+  return entries.find((entry) => !entry.isNight) || null;
+}
+
+function getMascotFillRatio() {
+  const lastEntry = getLastDayPeeEntry();
+  if (!lastEntry) return 0;
+
+  const targetHours = averageInterval(entries) || 4;
+  const elapsedHours = (new Date() - new Date(lastEntry.time)) / 36e5;
+
+  return Math.max(0, Math.min(1, elapsedHours / targetHours));
+}
+
+function renderMascotFill() {
+  const ratio = getMascotFillRatio();
+  const height = Math.round(ratio * 220);
+  els.mascotFill.setAttribute("y", String(220 - height));
+  els.mascotFill.setAttribute("height", String(height));
+}
+
+function getCurrentInterval() {
+  const lastEntry = getLastDayPeeEntry();
+  if (!lastEntry) return null;
+  return (new Date() - new Date(lastEntry.time)) / 36e5;
+}
+
+function renderCurrentInterval() {
+  els.currentInterval.textContent = formatHours(getCurrentInterval());
 }
 
 function averageIntervalSince(startDate) {
@@ -553,6 +586,8 @@ function render() {
   els.todayDate.textContent = new Intl.DateTimeFormat("sl-SI", { weekday: "long", day: "2-digit", month: "long" }).format(now);
   els.dailyTip.textContent = tips[tipIndex];
   els.dailyGoal.value = settings.dailyGoal;
+  renderMascotFill();
+  renderCurrentInterval();
   renderToday(todayEntries);
   renderNightMode();
   renderMetrics(rangeEntries);
@@ -672,3 +707,7 @@ els.exportCsv.addEventListener("click", () => {
 
 resetForm();
 render();
+setInterval(() => {
+  renderMascotFill();
+  renderCurrentInterval();
+}, 60000);

@@ -323,9 +323,19 @@ small {
   transform: rotate(24deg);
 }
 
-.drop-body {
-  fill: url("#none");
+.drop-body-empty {
+  fill: rgba(242, 198, 82, 0.18);
+}
+
+.drop-body-fill {
   fill: #f2c652;
+  transition: y 420ms ease, height 420ms ease;
+}
+
+.drop-body-outline {
+  fill: none;
+  stroke: rgba(77, 74, 54, 0.12);
+  stroke-width: 3;
   filter: drop-shadow(0 10px 10px rgba(142, 111, 40, 0.18));
 }
 
@@ -481,6 +491,11 @@ small {
 .bubble.calendar {
   color: var(--green);
   background: rgba(95, 149, 112, 0.13);
+}
+
+.bubble.clock {
+  color: var(--blue);
+  background: rgba(110, 162, 229, 0.15);
 }
 
 .wc-badge {
