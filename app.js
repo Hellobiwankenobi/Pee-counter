@@ -258,6 +258,7 @@ function getDayIntervalRows(list) {
   return withIntervals(list).filter((entry) => (
     entry.previousIntervalHours !== null &&
     !entry.isNight &&
+    sameDay(new Date(entry.time), new Date(entry.previousTime)) &&
     !intervalOverlapsSleep(entry.previousTime, entry.time)
   ));
 }
