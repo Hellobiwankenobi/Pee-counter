@@ -286,10 +286,11 @@ function getTodayIntervalRows() {
   ));
 }
 
-function getLastTodayInterval() {
+function getTodayAverageInterval() {
   const rows = getTodayIntervalRows();
-  const latest = rows.at(-1);
-  return latest ? latest.previousIntervalHours : null;
+  if (!rows.length) return null;
+  const total = rows.reduce((sum, entry) => sum + entry.previousIntervalHours, 0);
+  return total / rows.length;
 }
 
 function calculateAverageNightInterval() {
@@ -427,7 +428,7 @@ function renderToday(todayEntries) {
   const goal = Math.max(1, Number(settings.dailyGoal || 8));
   els.todayCount.textContent = count;
   document.querySelector(".goal-text").textContent = `/${goal}`;
-  els.todayInterval.textContent = formatHours(getLastTodayInterval());
+  els.todayInterval.textContent = formatHours(getTodayAverageInterval());
   renderDrops(count);
 
   if (count === 0) {
