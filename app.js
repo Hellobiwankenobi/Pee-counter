@@ -207,6 +207,13 @@ function getMonthEntries(list, date = new Date()) {
   });
 }
 
+function startOfWeek(date = new Date()) {
+  const start = startOfDay(date);
+  const day = start.getDay() || 7;
+  start.setDate(start.getDate() - day + 1);
+  return start;
+}
+
 function getAverageWindowDays(rangeEntries) {
   const days = Number(els.range.value);
   if (!rangeEntries.length) return days;
@@ -261,6 +268,15 @@ function averageInterval(list) {
   return intervals.reduce((sum, value) => sum + value, 0) / intervals.length;
 }
 
+function averageIntervalSince(startDate) {
+  const intervals = getDayIntervalRows(entries)
+    .filter((entry) => new Date(entry.time) >= startDate && new Date(entry.previousTime) >= startDate)
+    .map((entry) => entry.previousIntervalHours);
+
+  if (!intervals.length) return null;
+  return intervals.reduce((sum, value) => sum + value, 0) / intervals.length;
+}
+
 function getTodayIntervalRows() {
   const today = new Date();
   return getDayIntervalRows(entries).filter((entry) => (
@@ -273,13 +289,6 @@ function getLastTodayInterval() {
   const rows = getTodayIntervalRows();
   const latest = rows.at(-1);
   return latest ? latest.previousIntervalHours : null;
-}
-
-function getLastDaysEntries(days) {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days + 1);
-  cutoff.setHours(0, 0, 0, 0);
-  return entries.filter((entry) => new Date(entry.time) >= cutoff);
 }
 
 function calculateAverageNightInterval() {
@@ -429,7 +438,7 @@ function renderToday(todayEntries) {
 
 function renderMetrics(rangeEntries) {
   const days = getAverageWindowDays(rangeEntries);
-  const weeklyAvg = averageInterval(getLastDaysEntries(7));
+  const weeklyAvg = averageIntervalSince(startOfWeek());
   const allTimeAvg = averageInterval(entries);
   const nightAvg = calculateAverageNightInterval();
   const avgPee = (rangeEntries.length / days).toFixed(1);
